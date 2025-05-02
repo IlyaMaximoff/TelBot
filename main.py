@@ -7,9 +7,9 @@ import requests
 from telebot import types
 
 # ==== Настройки ====
-API_KEY = "d26649f3eaf04122954181950252804"  # API погоды
+API_KEY = "токен"  # API погоды
 CITY = "Shchelkovo"
-BOT_TOKEN = "7904139656:AAHuDbz04wkMO00v8LpxJZFiQcLaMBP73FI"  # <-- вставь свой токен
+BOT_TOKEN = "токен"  # <-- вставь свой токен
 
 bot = telebot.TeleBot(BOT_TOKEN)
 subscribed_users = set()
