@@ -4,6 +4,7 @@ import time
 import threading
 import random
 import requests
+from telebot import types
 
 # ==== Настройки ====
 API_KEY = "d26649f3eaf04122954181950252804"  # API погоды
@@ -14,9 +15,17 @@ bot = telebot.TeleBot(BOT_TOKEN)
 subscribed_users = set()
 user_data_store = {}
 
-# ==== /command1 – Приветствие и запуск задач ====
+
+# Обработчик команды /start
 @bot.message_handler(commands=['command1'])
-def start_message(message):
+def send_welcome(message):
+    # Создаем клавиатуру
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn2 = types.KeyboardButton("Погода")
+    btn3 = types.KeyboardButton("Таблица умножения")
+    btn4 = types.KeyboardButton("Отправить сообщение своим")
+    markup.add( btn2, btn3, btn4)
+
     bot.reply_to(message, "Привет! Я твой бот.")
     user_id = message.chat.id
     subscribed_users.add(user_id)
@@ -24,8 +33,15 @@ def start_message(message):
     threading.Thread(target=weather_reminders, args=(user_id,), daemon=True).start()
     threading.Thread(target=day_message, args=(user_id,), daemon=True).start()
 
+    bot.send_message(
+        message.chat.id,
+        "Выберите действие:",
+        reply_markup=markup
+    )
+
+
 # ==== /command2 – Погода ====
-@bot.message_handler(commands=['command2'])
+@bot.message_handler(func=lambda message: message.text == 'Погода')
 def weather_message(message):
     weather = get_weather()
     if isinstance(weather, dict):
@@ -94,7 +110,7 @@ def weather_reminders(chat_id):
         time.sleep(30)
 
 # ==== /command3 – Таблица умножения ====
-@bot.message_handler(commands=['command3'])
+@bot.message_handler(func=lambda message: message.text == 'Таблица умножения')
 def start_game(message):
     user_id = message.chat.id
     user_data_store[user_id] = {
@@ -148,7 +164,7 @@ def check_answer(message):
         bot.register_next_step_handler(msg, check_answer)
 
 # ==== /command4 – Рассылка  ====
-@bot.message_handler(commands=['command4'])
+@bot.message_handler(func=lambda message: message.text == 'Отправить сообщение своим')
 def handle_sos(message):
     msg = bot.reply_to(message, "📤 Напишите сообщение для всех подписчиков:")
     bot.register_next_step_handler(msg, forward_to_subscribers)
